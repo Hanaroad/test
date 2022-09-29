@@ -3,7 +3,7 @@ import dayjs from 'dayjs';
 import './chart.css';
 import React, { useEffect, useState } from 'react';
 import solardata from '../data/solardata.json';
-import makeDate from './makeDate';
+// import makeDate from './makeDate';
 import {
   ResponsiveContainer,
   ComposedChart,
@@ -19,21 +19,8 @@ import {
   Symbols,
 } from 'recharts';
 
-function makeDate = (data) => {
-  const sections = {};
-  data.forEach((chart) => {
-    const monthDate = dayjs(String(chart.연월일시)).format(
-      'YYYY-MM-DD HH:mm:ss'
-    );
-    if (Array.isArray(sections[monthDate])) {
-      sections[monthDate].push(chart);
-    } else {
-      sections[monthDate] = [chart];
-    }
-  });
-  return sections;
-}
-
+console.log(solardata.every);
+console.log(JSON.stringify('연월일시'));
 
 const tabs = [
   {
@@ -51,7 +38,12 @@ const tabs = [
   { label: '강수량', key: '강수량', content: '강수량(mm)' },
 ];
 
-export default function Chart({ chartDay }) {
+const loadData = [...solardata];
+console.log(loadData);
+// const loadData = () => JSON.parse(JSON.stringify(solardata));
+// console.log(loadData);
+export default function Chart() {
+  // const chartDay = makeDate(chartData);
   const [tabInfo, setTabInfo] = useState({
     label: '수평면일사량',
     key: '보정수평면일사량',
@@ -62,7 +54,6 @@ export default function Chart({ chartDay }) {
   const [currentBtn, setCurrentBtn] = useState('수평면일사량');
 
   const handleClickTabInfo = (label) => {
-    // console.log(key);/
     const index = tabs.findIndex((info) => info.label === label);
     setTabInfo({ ...tabs[index] });
     setCurrentBtn(label);
@@ -82,7 +73,7 @@ export default function Chart({ chartDay }) {
           };
 
           return (
-            <span className="legend-item" style={style}>
+            <span className="legend-item" key={dataKey} style={style}>
               <Surface width={10} height={10} viewBox="0 0 10 10">
                 <Symbols cx={5} cy={5} type="square" size={50} fill={color} />
               </Surface>
@@ -95,7 +86,9 @@ export default function Chart({ chartDay }) {
   };
 
   useEffect(() => {
-    fetch('http://222.239.231.149:8080/dashboard/data/solardata.json')
+    fetch(
+      'http://http://222.239.231.149:8080/dashboard/solaseado/data/solardata.json'
+    )
       .then((res) => res.json())
       .then((data) => {
         setChartDayData(data);
@@ -103,9 +96,9 @@ export default function Chart({ chartDay }) {
     if (Object.keys(chartDay).length > 0) {
       const tempDay = [];
       // 일자에 해당 하는 데이터들을 평균값 내서 새롭게 변수에다 넣는 코드
-      Object.entries(chartDay).forEach(([date, data]) => {
+      Object.entries(chartDay).forEach(([data]) => {
         let tempSolarMin =
-          Math.floor(data.reduce((p, c) => p + c.최소발전량, 0) * 100) / 100;
+          Math.floor(data.reduce((p, c) => p + c.최소발전량, 0) * 100) / 100; // Math.floor(x) : 주어진 수 이하의 가장 큰 정수 반환
         let tempSolarMax =
           Math.floor(data.reduce((p, c) => p + c.최대발전량, 0) * 100) / 100;
         let tempSolarAve =
@@ -139,6 +132,7 @@ export default function Chart({ chartDay }) {
       setChartDayData([...tempDay]);
     }
   }, [chartDay]);
+  console.log(chartDay);
 
   return (
     <div className="chart">
